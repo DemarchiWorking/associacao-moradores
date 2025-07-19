@@ -4,6 +4,18 @@ import { Component, ViewChild, ElementRef, viewChild } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowLeft, faArrowRight , faSearch } from '@fortawesome/free-solid-svg-icons';
 import { CarrinhoServiceService } from '../../services/carrinho-service.service';
+import { HttpClient } from '@angular/common/http';
+
+export interface Produto { 
+  id?: string; 
+  nome: string;
+  descricao: string;
+  preco: number;
+  quantidade: number;
+  data_criacao: string;
+}
+
+
 @Component({
   selector: 'app-bazar',
   standalone: true,
@@ -30,8 +42,9 @@ export class BazarComponent {
     { id: 5, nome:  'Quadro', icone: '../../../assets/icones/icone-quadro.png' },
     { id: 6, nome: 'Croche', icone: '../../../assets/icones/icone-croche.png'  },
    ];
+  private apiUrl = 'http://localhost:8081/api/produtos'; // Defina sua URL da API
 
-  produtos: any[] = [
+  produtos: any[] = [] /* [
     { nome: 'Caneca Personalizada', foto: 'https://http2.mlstatic.com/D_NQ_NP_743292-MLU70464443042_072023-O.webp', valor: 13.20, descricao: 'Uma caneca simples e personalizada', categoria: 0 },
     { nome: 'Camiseta Flor', foto: 'https://bonecanopano.com.br/wp-content/uploads/2020/06/babylook-pink-flor-margarida-no-boneca-no-pano-scaled.jpg', valor: 26.00, descricao: 'Uma camiseta moderna e confortável', categoria: 1 },
     { nome: 'Brinquedo Educativo', valor: 45.90, descricao: 'Um brinquedo que ensina e diverte', categoria: 2 },
@@ -39,7 +52,7 @@ export class BazarComponent {
     { nome: 'Escultura Artesanal', valor: 80.00, descricao: 'Uma escultura feita à mão', categoria: 4 },
     { nome: 'Quadro Artístico', valor: 55.20, descricao: 'Um quadro para embelezar sua parede', categoria: 5 },
     { nome: 'Toalha de Croche', valor: 62.00, descricao: 'Uma toalha de croche feita à mão', categoria: 6 },
-  ];
+  ];*/
 
   selectedCategoryId: number | null = null;
 
@@ -50,11 +63,31 @@ export class BazarComponent {
     description: `Product Category ${index + 1}`
   }));
 
-  constructor(private carrinhoService: CarrinhoServiceService) { 
+  constructor(private carrinhoService: CarrinhoServiceService,
+              private http: HttpClient
+
+  ) { 
   }
   ngOnInit(): void {
     this.carregarCarrinho();
+    this.carregarProdutos();
   }
+
+
+  carregarProdutos(): void {
+    this.http.get<Produto[]>(this.apiUrl)
+      .subscribe({
+        next: (data) => {
+          this.produtos = data;
+          console.log('Produtos carregados:', this.produtos);
+        },
+        error: (error) => {
+          console.error('Erro ao carregar produtos:', error); // Lida com erros
+        }
+      });
+  }
+
+
   selectCategory(id: number) {
     this.selectedCategoryId = id;
     const inputElement = document.getElementById('search-input') as HTMLInputElement;
