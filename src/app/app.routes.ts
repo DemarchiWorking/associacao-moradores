@@ -7,6 +7,8 @@ import { IndexComponent } from './pages/index/index.component';
 import { QuemSomosComponent } from './pages/quem-somos/quem-somos.component';
 import { DemandasComponent } from './pages/demandas/demandas.component';
 import { ContatoComponent } from './pages/contato/contato.component';
+import { CadastrarProdutoComponent } from './pages/cadastrar-produto/cadastrar-produto.component';
+import { DetalhesProdutoComponent } from './pages/detalhes-produto/detalhes-produto.component';
 
 export const routes: Routes = [
     {
@@ -20,6 +22,14 @@ export const routes: Routes = [
     {
         path: 'registrar',
         component: RegisterComponent
+    },    
+    {
+        path: 'cadastrar-produto',
+        component: CadastrarProdutoComponent
+    },
+    {
+        path: 'detalhes-produto/:id', // Caminho no plural
+        component: DetalhesProdutoComponent
     },
     {
         path: 'quem-somos',

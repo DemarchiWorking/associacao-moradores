@@ -5,6 +5,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowLeft, faArrowRight , faSearch } from '@fortawesome/free-solid-svg-icons';
 import { CarrinhoServiceService } from '../../services/carrinho-service.service';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 export interface Produto { 
   id?: string; 
@@ -15,7 +16,9 @@ export interface Produto {
   data_criacao: string;
 }
 
-
+export interface Categoria {
+  nome: string;
+}
 @Component({
   selector: 'app-bazar',
   standalone: true,
@@ -33,6 +36,9 @@ export class BazarComponent {
   items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'];
   @ViewChild('search-input', { static: false }) searchInput!: ElementRef;
   searchText: string = '';
+
+  
+
   categorias: any = [
     { id: 0, nome: 'Todos' , icone: '../../../assets/icones/icone-todos.png'},
     { id: 1, nome: 'Roupa', icone: '../../../assets/icones/icone-camiseta.png' },//  croche 
@@ -42,7 +48,7 @@ export class BazarComponent {
     { id: 5, nome:  'Quadro', icone: '../../../assets/icones/icone-quadro.png' },
     { id: 6, nome: 'Croche', icone: '../../../assets/icones/icone-croche.png'  },
    ];
-  private apiUrl = 'http://localhost:8081/api/produtos'; // Defina sua URL da API
+  private apiUrl = 'http://localhost:8081/api'; // Defina sua URL da API
 
   produtos: any[] = [] /* [
     { nome: 'Caneca Personalizada', foto: 'https://http2.mlstatic.com/D_NQ_NP_743292-MLU70464443042_072023-O.webp', valor: 13.20, descricao: 'Uma caneca simples e personalizada', categoria: 0 },
@@ -71,11 +77,19 @@ export class BazarComponent {
   ngOnInit(): void {
     this.carregarCarrinho();
     this.carregarProdutos();
+    this.getCategoriasDosProdutos().subscribe(categorias => {
+      this.categorias = categorias;
+      console.log('Categorias carregadas:', this.categorias);
+    }, error => {
+      console.error('Erro ao carregar categorias:', error);
+    });
   }
 
-
+  getCategoriasDosProdutos(): Observable<Categoria[]> {
+    return this.http.get<Categoria[]>(`${this.apiUrl}/categorias`);
+  }
   carregarProdutos(): void {
-    this.http.get<Produto[]>(this.apiUrl)
+    this.http.get<Produto[]>(this.apiUrl+"/produtos")
       .subscribe({
         next: (data) => {
           this.produtos = data;
