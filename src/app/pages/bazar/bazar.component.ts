@@ -4,11 +4,13 @@ import { Component, ViewChild, ElementRef, viewChild } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowLeft, faArrowRight , faSearch } from '@fortawesome/free-solid-svg-icons';
 import { CarrinhoServiceService } from '../../services/carrinho-service.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from '../../services/autenticacao/auth.service';
+import { Router } from '@angular/router';
 
-export interface Produto { 
-  id?: string; 
+export interface Produto {
+  id?: string;
   nome: string;
   descricao: string;
   preco: number;
@@ -36,8 +38,6 @@ export class BazarComponent {
   items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'];
   @ViewChild('search-input', { static: false }) searchInput!: ElementRef;
   searchText: string = '';
-
-  
 
   categorias: any = [
     { id: 0, nome: 'Todos' , icone: '../../../assets/icones/icone-todos.png'},
@@ -70,13 +70,16 @@ export class BazarComponent {
   }));
 
   constructor(private carrinhoService: CarrinhoServiceService,
-              private http: HttpClient
-
-  ) { 
+              private http: HttpClient,
+              private authService: AuthService,
+              private router: Router,
+              
+  ) {
   }
   ngOnInit(): void {
     this.carregarCarrinho();
     this.carregarProdutos();
+    this.authService.getTokenLocalStorage()
     this.getCategoriasDosProdutos().subscribe(categorias => {
       this.categorias = categorias;
       console.log('Categorias carregadas:', this.categorias);
@@ -86,22 +89,47 @@ export class BazarComponent {
   }
 
   getCategoriasDosProdutos(): Observable<Categoria[]> {
-    return this.http.get<Categoria[]>(`${this.apiUrl}/categorias`);
-  }
-  carregarProdutos(): void {
-    this.http.get<Produto[]>(this.apiUrl+"/produtos")
-      .subscribe({
-        next: (data) => {
-          this.produtos = data;
-          console.log('Produtos carregados:', this.produtos);
-        },
-        error: (error) => {
-          console.error('Erro ao carregar produtos:', error); // Lida com erros
-        }
+    const token = this.authService.getTokenLocalStorage();
+
+    if (token) {
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${token}`
       });
+      return this.http.get<Categoria[]>(`${this.apiUrl}/categorias`, { headers: headers });
+    } else {
+    
+      return new Observable(observer => {
+        observer.error('Nenhum token de autenticação encontrado.');
+        observer.complete();
+      });
+    }
   }
 
+  carregarProdutos(): void {
+    const token = this.authService.getTokenLocalStorage();
+    console.log('Token de autenticação:', token);
 
+    if (token) {
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+      });
+
+      this.http.get<Produto[]>(`${this.apiUrl}/produtos`, { headers: headers })
+        .subscribe({
+          next: (data) => {
+            this.produtos = data;
+            console.log('Produtos carregados:', this.produtos);
+          },
+          error: (error) => {
+            console.error('Erro ao carregar produtos:', error);
+          }
+        });
+    } else {
+      console.error('Nenhum token de autenticação encontrado. O usuário precisa fazer login.');
+      this.router.navigate(['/login']);
+    }
+  }
+  
   selectCategory(id: number) {
     this.selectedCategoryId = id;
     const inputElement = document.getElementById('search-input') as HTMLInputElement;

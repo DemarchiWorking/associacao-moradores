@@ -9,7 +9,8 @@ import { DemandasComponent } from './pages/demandas/demandas.component';
 import { ContatoComponent } from './pages/contato/contato.component';
 import { CadastrarProdutoComponent } from './pages/cadastrar-produto/cadastrar-produto.component';
 import { DetalhesProdutoComponent } from './pages/detalhes-produto/detalhes-produto.component';
-
+import { EntrarComponent } from './pages/entrar/entrar.component';
+import { PerfilComponent } from './pages/perfil/perfil.component';
 export const routes: Routes = [
     {
         path: '',
@@ -17,7 +18,11 @@ export const routes: Routes = [
     },
     {
         path: 'entrar',
-        component: LoginComponent
+        component: EntrarComponent
+    },
+    {
+        path: 'perfil',
+        component: PerfilComponent
     },
     {
         path: 'registrar',
@@ -28,7 +33,7 @@ export const routes: Routes = [
         component: CadastrarProdutoComponent
     },
     {
-        path: 'detalhes-produto/:id', // Caminho no plural
+        path: 'detalhes-produto/:id', 
         component: DetalhesProdutoComponent
     },
     {
